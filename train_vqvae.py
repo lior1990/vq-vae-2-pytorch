@@ -7,10 +7,10 @@ from torch import nn, optim
 from torch.utils.data import DataLoader, Dataset
 
 from torchvision import transforms, utils
-from torchvision.datasets.folder import default_loader
 
 from tqdm import tqdm
 
+from dataset import CustomDataset
 from vqvae import VQVAE
 from scheduler import CycleScheduler
 
@@ -81,20 +81,6 @@ def main(args):
             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
         ]
     )
-
-    class CustomDataset(Dataset):
-        def __init__(self, path, transforms, data_rep = 10000):
-            self.transforms = transforms
-            self.path = path
-            self.files = os.listdir(path)
-            self.n = len(self.files)
-            self.data_rep = data_rep
-
-        def __getitem__(self, index):
-            return self.transforms(default_loader(os.path.join(self.path, self.files[index % self.n])))
-
-        def __len__(self):
-            return self.n * self.data_rep
 
     dataset = CustomDataset(args.path, transform)
     loader = DataLoader(
