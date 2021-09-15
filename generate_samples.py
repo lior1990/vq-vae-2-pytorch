@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--ckpt', type=str, required=True)
     parser.add_argument('--name', type=str)
     parser.add_argument('path', type=str)
+    parser.add_argument("--n_embeddings", type=int, default=512)
 
     args = parser.parse_args()
 
