@@ -14,6 +14,8 @@ from torchvision import transforms, utils
 def generate_samples(model, loader, device, args):
     pbar = tqdm(loader)
 
+    os.makedirs(f"generate_samples/{args.name}", exist_ok=True)
+
     for i, img in enumerate(pbar):
         img = img.to(device)
 
