@@ -101,7 +101,7 @@ def main(args):
         dataset, batch_size=128 // args.n_gpu, shuffle=True, num_workers=0, drop_last=False,
     )
 
-    model = VQVAE().to(device)
+    model = VQVAE(n_embed=args.n_embeddings).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
@@ -139,6 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("--sched", type=str)
     parser.add_argument("--name", type=str, default="default")
     parser.add_argument("path", type=str)
+    parser.add_argument("--n_embeddings", type=int, default=512)
 
     args = parser.parse_args()
 
