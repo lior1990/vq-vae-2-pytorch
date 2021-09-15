@@ -61,7 +61,7 @@ def train(epoch, loader, model, optimizer, scheduler, device):
 
             utils.save_image(
                 torch.cat([sample, out], 0),
-                f"sample/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
+                f"sample/{args.name}/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
                 nrow=sample_size,
                 normalize=True,
                 range=(-1, 1),
@@ -115,9 +115,11 @@ def main(args):
         )
 
     for i in range(args.epoch):
-        train(i, loader, model, optimizer, scheduler, device)
+        os.makedirs(f"checkpoint/{args.name}", exist_ok=True)
+        os.makedirs(f"sample/{args.name}", exist_ok=True)
 
-        torch.save(model.state_dict(), f"checkpoint/vqvae_{str(i + 1).zfill(3)}.pt")
+        train(i, loader, model, optimizer, scheduler, device)
+        torch.save(model.state_dict(), f"checkpoint/{args.name}/vqvae_{str(i + 1).zfill(3)}.pt")
 
 
 if __name__ == "__main__":
@@ -135,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--epoch", type=int, default=560)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--sched", type=str)
+    parser.add_argument("--name", type=str, default="default")
     parser.add_argument("path", type=str)
 
     args = parser.parse_args()
