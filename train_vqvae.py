@@ -96,7 +96,7 @@ def main(args):
         def __len__(self):
             return self.n * self.data_rep
 
-    dataset = CustomDataset(args.path, args.data_rep, transform)
+    dataset = CustomDataset(args.path, transform)
     loader = DataLoader(
         dataset, batch_size=128 // args.n_gpu, shuffle=True, num_workers=0, drop_last=False,
     )
