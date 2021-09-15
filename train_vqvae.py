@@ -83,18 +83,20 @@ def main(args):
     )
 
     class CustomDataset(Dataset):
-        def __init__(self, path, transforms):
+        def __init__(self, path, transforms, data_rep = 10000):
             self.transforms = transforms
             self.path = path
             self.files = os.listdir(path)
+            self.n = len(self.files)
+            self.data_rep = data_rep
 
         def __getitem__(self, index):
-            return self.transforms(default_loader(os.path.join(self.path, self.files[index])))
+            return self.transforms(default_loader(os.path.join(self.path, self.files[index % self.n])))
 
         def __len__(self):
-            return len(self.files)
+            return self.n * self.data_rep
 
-    dataset = CustomDataset(args.path, transform)
+    dataset = CustomDataset(args.path, args.data_rep, transform)
     loader = DataLoader(
         dataset, batch_size=128 // args.n_gpu, shuffle=True, num_workers=0, drop_last=False,
     )
