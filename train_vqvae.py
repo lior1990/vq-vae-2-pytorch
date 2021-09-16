@@ -11,11 +11,12 @@ from torchvision import transforms, utils
 from tqdm import tqdm
 
 from dataset import CustomDataset
+from discriminator import NLayerDiscriminator
 from vqvae import VQVAE
 from scheduler import CycleScheduler
 
 
-def train(epoch, loader, model, optimizer, scheduler, device):
+def train(epoch, loader, model, discriminator, optimizer, optimizer_d, scheduler, device):
     loader = tqdm(loader)
 
     criterion = nn.MSELoss()
@@ -24,14 +25,32 @@ def train(epoch, loader, model, optimizer, scheduler, device):
     sample_size = 25
 
     for i, img in enumerate(loader):
-        model.zero_grad()
-
         img = img.to(device)
 
-        out, latent_loss = model(img)
-        recon_loss = criterion(out, img)
+        # train D with real
+        logits_real = discriminator(img)
+
+        # train D with fake
+        fake, latent_loss = model(img)
+        logits_fake = discriminator(fake.detach())
+
+        loss_real = -torch.mean(logits_real)
+        loss_fake = torch.mean(logits_fake)
+
+        d_loss = loss_real + loss_fake
+
+        discriminator.zero_grad()
+        d_loss.backward()
+        optimizer_d.step()
+
+        # train G
+        recon_loss = criterion(fake, img)
         latent_loss = latent_loss.mean()
-        loss = recon_loss + latent_loss_weight * latent_loss
+
+        logits_fake = discriminator(fake)
+        g_loss = -torch.mean(logits_fake)
+        loss = recon_loss + latent_loss_weight * latent_loss + g_loss
+        model.zero_grad()
         loss.backward()
 
         if scheduler is not None:
@@ -47,6 +66,7 @@ def train(epoch, loader, model, optimizer, scheduler, device):
             (
                 f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
                 f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
+                f"g_loss: {g_loss.item():.3f}; d_loss: {d_loss.item():.3f}; "
                 f"lr: {lr:.5f}"
             )
         )
@@ -88,8 +108,10 @@ def main(args):
     )
 
     model = VQVAE(n_embed=args.n_embeddings).to(device)
+    discriminator = NLayerDiscriminator().to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer_d = optim.Adam(discriminator.parameters(), lr=args.lr)
     scheduler = None
     if args.sched == "cycle":
         scheduler = CycleScheduler(
@@ -104,7 +126,7 @@ def main(args):
         os.makedirs(f"checkpoint/{args.name}", exist_ok=True)
         os.makedirs(f"sample/{args.name}", exist_ok=True)
 
-        train(i, loader, model, optimizer, scheduler, device)
+        train(i, loader, model, discriminator, optimizer, optimizer_d, scheduler, device)
         torch.save(model.state_dict(), f"checkpoint/{args.name}/vqvae_{str(i + 1).zfill(3)}.pt")
 
 
