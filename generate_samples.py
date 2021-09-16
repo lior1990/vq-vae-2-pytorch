@@ -9,6 +9,7 @@ from tqdm import tqdm
 from dataset import ImageFileDataset, CodeRow, CustomDataset
 from vqvae import VQVAE
 from torchvision import transforms, utils
+import os
 
 
 def generate_samples(model, loader, device, args):
