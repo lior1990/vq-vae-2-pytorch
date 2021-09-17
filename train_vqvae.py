@@ -11,7 +11,7 @@ from torchvision import transforms, utils
 from tqdm import tqdm
 
 from dataset import CustomDataset
-from discriminator import NLayerDiscriminator
+from discriminator import NLayerDiscriminator, calc_gradient_penalty
 from vqvae import VQVAE
 from scheduler import CycleScheduler
 
@@ -37,7 +37,9 @@ def train(epoch, loader, model, discriminator, optimizer, optimizer_d, scheduler
         loss_real = -torch.mean(logits_real)
         loss_fake = torch.mean(logits_fake)
 
-        d_loss = loss_real + loss_fake
+        gradient_penalty = calc_gradient_penalty(discriminator, img, fake.detach(), device)
+
+        d_loss = loss_real + loss_fake + gradient_penalty
 
         discriminator.zero_grad()
         d_loss.backward()
