@@ -106,10 +106,10 @@ def main(args):
 
     dataset = CustomDataset(args.path, transform)
     loader = DataLoader(
-        dataset, batch_size=128 // args.n_gpu, shuffle=True, num_workers=0, drop_last=False,
+        dataset, batch_size=64 // args.n_gpu, shuffle=True, num_workers=0, drop_last=False,
     )
 
-    model = VQVAE(n_embed=args.n_embeddings).to(device)
+    model = VQVAE(n_embed=args.n_embeddings, channel=256).to(device)
     discriminator = NLayerDiscriminator().to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)

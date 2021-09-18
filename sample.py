@@ -32,7 +32,7 @@ def load_model(model, checkpoint, device):
         args = ckpt['args']
 
     if model == 'vqvae':
-        model = VQVAE(n_embed=args.n_embeddings)
+        model = VQVAE(n_embed=args.n_embeddings, channel=256)
 
     elif model == 'pixelsnail_top':
         model = PixelSNAIL(

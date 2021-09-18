@@ -56,7 +56,7 @@ def main():
     dataset = CustomDataset(args.path, transform, data_rep=1)
     loader = DataLoader(dataset, batch_size=10, shuffle=False, num_workers=0, drop_last=False)
 
-    model = VQVAE(n_embed=args.n_embeddings)
+    model = VQVAE(n_embed=args.n_embeddings, channel=256)
     model.load_state_dict(torch.load(args.ckpt))
     model = model.to(device)
     model.eval()

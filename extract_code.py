@@ -56,7 +56,7 @@ if __name__ == '__main__':
     dataset = ImageFileDataset(args.path, transform=transform)
     loader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=4)
 
-    model = VQVAE(n_embed=args.n_embeddings)
+    model = VQVAE(n_embed=args.n_embeddings, channel=256)
     model.load_state_dict(torch.load(args.ckpt))
     model = model.to(device)
     model.eval()
